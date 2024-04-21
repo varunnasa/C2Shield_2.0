@@ -1,0 +1,8 @@
+###
+[09:50:29] DNS TUNNELING DETECTED BY ML MODEL 
+{'src': '10.47.1.10', 'query': 'www3.l.google.com', 'rank': 1.0, 'pred_is_dns_data_exfiltration_proba': 1.0, 'pred_is_dns_data_exfiltration': 1.0}
+{'src': '10.47.1.153', 'query': 'tiles-cloudfront.cdn.mozilla.net', 'rank': 1.0, 'pred_is_dns_data_exfiltration_proba': 1.0, 'pred_is_dns_data_exfiltration': 1.0}
+{'src': '10.47.3.142', 'query': 'mirror.nodesdirect.com', 'rank': 1.0, 'pred_is_dns_data_exfiltration_proba': 1.0, 'pred_is_dns_data_exfiltration': 1.0}
+{'src': '10.47.5.10', 'query': 'a.disquscdn.com', 'rank': 1.0, 'pred_is_dns_data_exfiltration_proba': 1.0, 'pred_is_dns_data_exfiltration': 1.0}
+{'src': '10.47.6.10', 'query': 'msconfiggallery.cloudapp.net', 'rank': 1.0, 'pred_is_dns_data_exfiltration_proba': 1.0, 'pred_is_dns_data_exfiltration': 1.0}
+{'src': '10.47.6.58', 'query': '1.debian.pool.ntp.org', 'rank': 1.0, 'pred_is_dns_data_exfiltration_proba': 1.0, 'pred_is_dns_data_exfiltration': 1.0}

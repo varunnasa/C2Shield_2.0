@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Command And Control Analysis Report</title>
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+
+        .report-table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        .report-table th,
+        .report-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .report-table th {
+            background-color: #f2f2f2;
+        }
+
+        .general-table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        .general-table td:first-child {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .general-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        hr {
+            border: 1px solid black;
+        }
+
+        .not-detected {
+            color: rgb(34, 158, 23);
+            font-size: 16px;
+            font-weight: bold,
+        }
+
+        .one-column-table {
+            border-collapse: collapse;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .one-column-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        .one-column-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .circle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 50px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .green {
+            background-color: green;
+            color: white;
+        }
+
+        .orange {
+            background-color: orange;
+            color: white;
+        }
+
+        .red {
+            background-color: red;
+            color: white;
+        }
+
+        .flex-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .toggle-button {
+            margin: 10px 0 20px;
+            padding: 5px 10px;
+            font-size: 14px;
+            text-align: center;
+            color: black;
+            background-color: #ededed;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .toggle-button:hover {
+            background-color: #b4b4b4;
+        }
+
+        #toc a {
+            text-decoration: none;
+            color: #333;
+            display: block;
+            font-size: 1.10em;
+        }
+
+        #toc ol {
+            margin-bottom: 5px;
+            font-size: 1.10em;
+        }
+
+        #toc li::marker {
+            font-weight: bold;
+        }
+
+        #toc a {
+            text-decoration: none;
+            color: #333;
+        }
+
+        #toc a:hover {
+            text-decoration: underline;
+        }
+    </style>
+    <script>
+        function toggleContent(elementID) {
+            var x = document.getElementById(elementID);
+            var button = document.querySelector(`button.toggle-button[onclick="toggleContent('${elementID}')"]`);
+            if (x.style.display === "none") {
+                x.style.display = "block";
+                button.innerHTML = '[ hide table ]';
+            } else {
+                x.style.display = "none";
+                button.innerHTML = '[ show table ]';
+            }
+        }
+    </script>
+</head>
+
+<body>
+
+<h1>Command And Control Analysis Report</h1>
+
+<div class="toc" id="toc"></div>
+
+<hr>
+<h2 class="toc-heading">General information</h2>
+<table class="general-table">
+    <tr>
+        <td>Capture file path</td>
+        <td>pcaps/json_streaming_dns.log</td>
+    </tr>
+    <tr>
+        <td>Analysis timestamp</td>
+        <td>2024-04-21 11:00:36</td>
+    </tr>
+    <tr>
+        <td>Capture file SHA256</td>
+        <td>e13988bc126aaa5f9df8084586a62e9440aa31c66bd45f9bc33c90f770d0322e</td>
+    </tr>
+    <tr>
+        <td>Capture start time</td>
+        <td>2024-04-21 11:00:36</td>
+    </tr>
+    <tr>
+        <td>Capture end time</td>
+        <td>2024-04-21 11:00:57</td>
+    </tr>
+    <!-- <tr>
+        <td>Number of external TCP connections</td>
+        <td>None</td>
+    </tr> -->
+    <tr>
+        <td>Number of unique domain names</td>
+        <td>1440</td>
+    </tr>
+    <tr>
+        <td>Number of unique public IP addresses</td>
+        <td>158</td>
+    </tr>
+    <!-- <tr>
+        <td>Number of HTTP sessions</td>
+        <td>None</td>
+    </tr> -->
+    <!-- <tr>
+        <td>Number of extracted URLs</td>
+        <td>None</td>
+    </tr>
+    <tr>
+        <td>Number of extracted TLS certificates</td>
+        <td>None</td>
+    </tr> -->
+</table>
+<br>
+<table class="report-table">
+    <thead>
+    <tr>
+        <th colspan="4">Configured Detection Thresholds</th>
+    </tr>
+    <tr>
+        <th>Indicator</th>
+        <th>Description</th>
+        <th>Value</th>
+        <th>Unit</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>Frequency</td>
+        <td>Percentage of TCP network connections out of all TCP connections.</td>
+        <td>10</td>
+        <td>percentage</td>
+    </tr>
+    <tr>
+        <td>Session Duration</td>
+        <td>Network connection duration in seconds.</td>
+        <td>14000</td>
+        <td>seconds</td>
+    </tr>
+    <tr>
+        <td>HTTP Content-Length</td>
+        <td>HTTP message body size in bytes.</td>
+        <td>50000</td>
+        <td>bytes</td>
+    </tr>
+    <tr>
+        <td>Subdomain Length</td>
+        <td>The number of characters that make up the subdomains.</td>
+        <td>30</td>
+        <td>characters</td>
+    </tr>
+    </tbody>
+</table>
+
+<hr>
+<div class="flex-container">
+    <h2>Number of detected potential Command and Control (C2) communication indicators:</h2>
+    <div
+            class="circle orange">
+        2 / 10
+    </div>
+</div>
+
+<hr>
+<h2 class="toc-heading">Connections with excessive frequency</h2>
+
+<p class="not-detected">NOT DETECTED</p>
+
+
+<hr>
+<h2 class="toc-heading">Long connections</h2>
+
+<p class="not-detected">NOT DETECTED</p>
+
+
+<hr>
+<h2 class="toc-heading">Unusual big HTTP message body size</h2>
+
+<p class="not-detected">NOT DETECTED</p>
+
+
+<hr>
+<h2 class="toc-heading">Malicious TLS certificate values</h2>
+
+<p class="not-detected">NOT DETECTED</p>
+
+
+<!-- <hr> -->
+<!-- <h2 class="toc-heading">Tor network traffic</h2>
+
+
+    
+<p class="not-detected">NOT DETECTED</p>
+ -->
+
+<hr>
+<h2 class="toc-heading">Outgoing network traffic to Tor exit nodes</h2>
+
+
+    
+<p class="not-detected">NOT DETECTED</p>
+
+
+
+
+<hr>
+<h2 class="toc-heading">DNS Tunneling</h2>
+
+<button class="toggle-button" onclick="toggleContent('dns-tunneling')" style="text-align: right;">[ hide content
+    ]
+</button>
+<div id="dns-tunneling" style="display:block;">
+    <table class="report-table">
+        <thead>
+        <tr>
+            <th>Domain Name</th>
+            <th>Query</th>
+        </tr>
+        </thead>
+        <tbody>
+        
+        
+        <tr>
+            <td>loompa.</td>
+            <td>notifications.google.com.factory.oompa.loompa.</td>
+        </tr>
+        
+        <tr>
+            <td>loompa.</td>
+            <td>_ldap._tcp.dc._msdcs.factory.oompa.loompa.</td>
+        </tr>
+        
+        <tr>
+            <td colspan="2">
+                <b>Queried 2 unique
+                    
+                    subdomains
+                    
+                    for 'loompa.'
+                </b>
+            </td>
+        </tr>
+        
+        
+        <tr>
+            <td>rackcdn.com</td>
+            <td>a21ed24aedde648804e7-228765c84088fef4ff5e70f2710398e9.r17.cf1.rackcdn.com.</td>
+        </tr>
+        
+        <tr>
+            <td colspan="2">
+                <b>Queried 1 unique
+                    
+                    subdomain
+                    
+                    for 'rackcdn.com'
+                </b>
+            </td>
+        </tr>
+        
+        
+        <tr>
+            <td>akadns.net</td>
+            <td>v10-win.vortex.data.microsoft.com.akadns.net.</td>
+        </tr>
+        
+        <tr>
+            <td>akadns.net</td>
+            <td>www.microsoft.com-c-3.edgekey.net.globalredir.akadns.net.</td>
+        </tr>
+        
+        <tr>
+            <td colspan="2">
+                <b>Queried 2 unique
+                    
+                    subdomains
+                    
+                    for 'akadns.net'
+                </b>
+            </td>
+        </tr>
+        
+        
+        <tr>
+            <td>fastly.net</td>
+            <td>community-cdn-digitalocean-com.global.ssl.fastly.net.</td>
+        </tr>
+        
+        <tr>
+            <td colspan="2">
+                <b>Queried 1 unique
+                    
+                    subdomain
+                    
+                    for 'fastly.net'
+                </b>
+            </td>
+        </tr>
+        
+        
+        <tr>
+            <td>footprintdns.com</td>
+            <td>a57663a7ab50472d7b7ac1282ccd6458.clo.footprintdns.com.</td>
+        </tr>
+        
+        <tr>
+            <td>footprintdns.com</td>
+            <td>00dd9f942231b2012112cd2f5aca3ee4.clo.footprintdns.com.</td>
+        </tr>
+        
+        <tr>
+            <td>footprintdns.com</td>
+            <td>481571d1de77f30bb55357ff0c775a94.clo.footprintdns.com.</td>
+        </tr>
+        
+        <tr>
+            <td>footprintdns.com</td>
+            <td>d4ef284d35c1882c88a4fb23543e5ee6.clo.footprintdns.com.</td>
+        </tr>
+        
+        <tr>
+            <td>footprintdns.com</td>
+            <td>784a24883b184fa7e31291c998cfdf7a.clo.footprintdns.com.</td>
+        </tr>
+        
+        <tr>
+            <td>footprintdns.com</td>
+            <td>0f0b3d6f2e1daa624b810129266113d8.clo.footprintdns.com.</td>
+        </tr>
+        
+        <tr>
+            <td>footprintdns.com</td>
+            <td>0988253c66242502070643933dd49e88.clo.footprintdns.com.</td>
+        </tr>
+        
+        <tr>
+            <td>footprintdns.com</td>
+            <td>9023d94da1dc24b9b09b8da5a1ba77fd.clo.footprintdns.com.</td>
+        </tr>
+        
+        <tr>
+            <td>footprintdns.com</td>
+            <td>2f39178f7310c6b527ae43dc6807e21e.clo.footprintdns.com.</td>
+        </tr>
+        
+        <tr>
+            <td>footprintdns.com</td>
+            <td>cab9ca070acc5e7ef772d71f2584fd4d.clo.footprintdns.com.</td>
+        </tr>
+        
+        <tr>
+            <td>footprintdns.com</td>
+            <td>c33ef855a65340d6555826016d0d2493.clo.footprintdns.com.</td>
+        </tr>
+        
+        <tr>
+            <td>footprintdns.com</td>
+            <td>776f5e5cb0f63d5cf5f7b33d077887e4.clo.footprintdns.com.</td>
+        </tr>
+        
+        <tr>
+            <td>footprintdns.com</td>
+            <td>bcfe8c9028d41c60d9b1e097c3707cd8.clo.footprintdns.com.</td>
+        </tr>
+        
+        <tr>
+            <td>footprintdns.com</td>
+            <td>bac64dad2d3d3d69aee686becd1e52ee.clo.footprintdns.com.</td>
+        </tr>
+        
+        <tr>
+            <td>footprintdns.com</td>
+            <td>da97042df41e3bf7fb1bb0bd3ae2b21c.clo.footprintdns.com.</td>
+        </tr>
+        
+        <tr>
+            <td>footprintdns.com</td>
+            <td>074323363b01a03bdc370e4ff3c034a6.clo.footprintdns.com.</td>
+        </tr>
+        
+        <tr>
+            <td>footprintdns.com</td>
+            <td>673f48c3beb0dd9a5bfc89e67cf8a293.clo.footprintdns.com.</td>
+        </tr>
+        
+        <tr>
+            <td>footprintdns.com</td>
+            <td>f0f5c9f02e11f6d3dfd7f02bc093c7f3.clo.footprintdns.com.</td>
+        </tr>
+        
+        <tr>
+            <td>footprintdns.com</td>
+            <td>7af7275f46c6e8a3208838b320a7aa75.clo.footprintdns.com.</td>
+        </tr>
+        
+        <tr>
+            <td>footprintdns.com</td>
+            <td>562d1eeb10b0b450f47c40d1bbbe11c7.clo.footprintdns.com.</td>
+        </tr>
+        
+        <tr>
+            <td colspan="2">
+                <b>Queried 20 unique
+                    
+                    subdomains
+                    
+                    for 'footprintdns.com'
+                </b>
+            </td>
+        </tr>
+        
+        
+        <tr>
+            <td>azure.com</td>
+            <td>muw1-shasta-rrsipv46-prod.westus.cloudapp.azure.com.</td>
+        </tr>
+        
+        <tr>
+            <td>azure.com</td>
+            <td>mue1-shasta-rrsipv46-prod.eastus.cloudapp.azure.com.</td>
+        </tr>
+        
+        <tr>
+            <td colspan="2">
+                <b>Queried 2 unique
+                    
+                    subdomains
+                    
+                    for 'azure.com'
+                </b>
+            </td>
+        </tr>
+        
+        
+        <tr>
+            <td>sandstorm.io</td>
+            <td>ui-721249b24aef70e36ebc5c6edd1a8885.oasis.sandstorm.io.</td>
+        </tr>
+        
+        <tr>
+            <td colspan="2">
+                <b>Queried 1 unique
+                    
+                    subdomain
+                    
+                    for 'sandstorm.io'
+                </b>
+            </td>
+        </tr>
+        
+        
+        <tr>
+            <td>qualtrics.com</td>
+            <td>zn_9nquvazst1xipkt-cbs.siteintercept.qualtrics.com.</td>
+        </tr>
+        
+        <tr>
+            <td>qualtrics.com</td>
+            <td>zn_0pxrmhobblncaad-hpsupport.siteintercept.qualtrics.com.</td>
+        </tr>
+        
+        <tr>
+            <td colspan="2">
+                <b>Queried 2 unique
+                    
+                    subdomains
+                    
+                    for 'qualtrics.com'
+                </b>
+            </td>
+        </tr>
+        
+        
+        <tr>
+            <td>elasticbeanstalk.com</td>
+            <td>darci2-prod.55b4dgxmwr.us-east-1.elasticbeanstalk.com.</td>
+        </tr>
+        
+        <tr>
+            <td>elasticbeanstalk.com</td>
+            <td>eventtrack-api-prod.s4spujqaty.us-east-1.elasticbeanstalk.com.</td>
+        </tr>
+        
+        <tr>
+            <td colspan="2">
+                <b>Queried 2 unique
+                    
+                    subdomains
+                    
+                    for 'elasticbeanstalk.com'
+                </b>
+            </td>
+        </tr>
+        
+        
+        <tr>
+            <td>windows.net</td>
+            <td>waws-prod-bay-015.vip.azurewebsites.windows.net.</td>
+        </tr>
+        
+        <tr>
+            <td colspan="2">
+                <b>Queried 1 unique
+                    
+                    subdomain
+                    
+                    for 'windows.net'
+                </b>
+            </td>
+        </tr>
+        
+        </tbody>
+    </table>
+</div>
+
+
+<!-- <hr> -->
+<!-- <h2 class="toc-heading">JA3 matches</h2>
+
+<p class="not-detected">NOT DETECTED</p>
+ -->
+
+<!-- <hr> -->
+<!-- <h2 class="toc-heading">Requested crypto / cryptojacking domain names</h2>
+
+<p class="not-detected">NOT DETECTED</p>
+ -->
+
+
+
+<hr>
+<div style="text-align: right;">
+    <p>Generated on 2024-04-21 11:04:42</p>
+</div>
+
+<script>
+    var headings = document.getElementsByClassName('toc-heading');
+    var tocHtml = '';
+    for (var i = 0; i < headings.length; i++) {
+        var headingText = headings[i].textContent;
+        var anchorId = 'heading-' + i;
+        tocHtml += '<li><a href="#' + anchorId + '" onclick="scrollToHeading(\'' + anchorId + '\')">' + headingText + '</a></li>';
+        headings[i].id = anchorId;
+    }
+    document.getElementById('toc').innerHTML = '<hr><h2>Table of Contents</h2><ol>' + tocHtml + '</ol>';
+</script>
+
+</body>
+
+</html>
