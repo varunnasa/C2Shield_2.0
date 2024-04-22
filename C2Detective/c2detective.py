@@ -7,7 +7,9 @@ import logging
 import time
 import datetime
 import sqlite3
-
+import json
+import flow_analysis
+import pandas as pd
 from src.analyst_profile import AnalystProfile
 from src.packet_parser import PacketParser
 from src.packet_capture import PacketCapture
@@ -293,7 +295,36 @@ def main():
 
     if args.dga:
         detection_engine.detect_dga()
-    detection_engine.detect_from_ml_model(input_file)
+    
+    
+    with open('config/domain_whitelist.txt', 'r') as f:
+        whitelist = set(line.strip() for line in f)
+
+    # Open the input DNS log file and create an output file for non-whitelisted queries
+    with open(input_file, 'r') as input_file, open('pcaps/non_whitelisted_queries.log', 'w') as output_file:
+        for line in input_file:
+            entry = json.loads(line)
+            query = entry.get('query', '')
+            domain = ".".join(query.split('.')[-2:])
+            # Check if the query is not in the whitelist
+            if domain not in whitelist:
+                output_file.write(line)
+    print(input_file)
+    input_file.close()
+    # os.remove(input_file.name)
+    new_input_file = 'pcaps/non_whitelisted_queries.log'
+
+
+
+    flow_analysis.clients_by_volume_of_requests(new_input_file)
+    flow_analysis.analyze_dns_log_record_type(new_input_file)
+    flow_analysis.analyze_packet_size_and_volume(new_input_file)
+    flow_analysis.detect_beaconing_activity(new_input_file)
+    flow_analysis.detect_hosts_talking_to_beaconing_domains(new_input_file)
+    flow_analysis.detect_domains_with_lots_of_subdomains(new_input_file)
+    flow_analysis.detect_dns_tunneling_based_on_entropy(new_input_file)
+
+    detection_engine.detect_from_ml_model(new_input_file)
     detection_engine.detect_dns_tunneling()
 
     conn = sqlite3.connect('detection_logs.db')
@@ -349,17 +380,17 @@ def main():
         conn.commit()
         conn.close()
 
-    if plugin_c2hunter:
-        print(('- ' * (terminal_size.columns // 2)) + ('-' * (terminal_size.columns % 2)))
-        c2hunter_db = plugins.get('C2Hunter')
-        if os.path.isfile(c2hunter_db):
-            print(f"[{time.strftime('%H:%M:%S')}] [INFO] Using plugin C2Hunter for enhanced detection capabilities ...")
-            logging.info("Using plugin C2Hunter for enhanced detection capabilities")
-            detection_engine.c2hunter_plugin(c2hunter_db)
-        else:
-            print(
-                f"[{time.strftime('%H:%M:%S')}] [ERROR] Provided C2Hunter database at '{c2hunter_db}' does not exist")
-            logging.error(f"Provided C2Hunter database at '{c2hunter_db}' does not exist")
+    # if plugin_c2hunter:
+    #     print(('- ' * (terminal_size.columns // 2)) + ('-' * (terminal_size.columns % 2)))
+    #     c2hunter_db = plugins.get('C2Hunter')
+    #     if os.path.isfile(c2hunter_db):
+    #         print(f"[{time.strftime('%H:%M:%S')}] [INFO] Using plugin C2Hunter for enhanced detection capabilities ...")
+    #         logging.info("Using plugin C2Hunter for enhanced detection capabilities")
+    #         detection_engine.c2hunter_plugin(c2hunter_db)
+    #     else:
+    #         print(
+    #             f"[{time.strftime('%H:%M:%S')}] [ERROR] Provided C2Hunter database at '{c2hunter_db}' does not exist")
+    #         logging.error(f"Provided C2Hunter database at '{c2hunter_db}' does not exist")
 
     detected_iocs = detection_engine.get_detected_iocs()
 
@@ -390,15 +421,12 @@ def main():
         c2_indicators_count = detection_engine.get_c2_indicators_count()
         thresholds = analyst_profile.thresholds
         detection_reporter = DetectionReporter(output_dir, thresholds, c2_indicators_total_count, c2_indicators_count,
-                                               extracted_data, enriched_iocs, detected_iocs, dga_detection,
-                                               plugin_c2hunter)
+                                               extracted_data, enriched_iocs,detected_iocs)
         detection_reporter.write_detected_iocs_to_file()
         if args.enrich_iocs:
             detection_reporter.write_enriched_iocs_to_file()
         detection_reporter.create_html_analysis_report()
         detection_reporter.write_extracted_data_to_file("dataframe_log")
-
-        # detection_reporter.create_pdf_analysis_report()
     else:
         print(
             f"[{time.strftime('%H:%M:%S')}] [ERROR] The provided data is incomplete, therefore, exporting detected IoCs is not possible ...")

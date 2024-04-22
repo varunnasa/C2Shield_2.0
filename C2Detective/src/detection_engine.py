@@ -303,7 +303,7 @@ class DetectionEngine:
             f"[{time.strftime('%H:%M:%S')}] [INFO] Looking for indicators of DNS Tunneling technique Using ML Model ...")
         logging.info("Looking for indicators of DNS Tunneling using ML Model")
         recent_df = ml_model.start(input_file)
-        filtered_df = recent_df[recent_df['prediction'] == 1]
+        filtered_df = recent_df[recent_df['prediction'] == 1].drop_duplicates(subset=['query'])
         detected_model = False
         self.detected_iocs["DNS_Tunneling_Model"] = {}
         # print(filtered_df)
