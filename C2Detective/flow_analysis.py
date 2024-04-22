@@ -4,6 +4,34 @@ import pandas as pd
 from datetime import datetime
 import math
 import logging 
+import sqlite3
+
+conn = sqlite3.connect('detection_logs.db')
+c = conn.cursor()
+
+#######################################Creating table for all 6 functions#######################################
+c.execute('''CREATE TABLE IF NOT EXISTS client_requests
+                 (client_ip TEXT, requests INTEGER)''')
+
+c.execute('''CREATE TABLE IF NOT EXISTS dns_record_counts
+                 (record_type TEXT, count INTEGER)''')
+
+c.execute('''CREATE TABLE IF NOT EXISTS packet_size_and_volume
+                 (client_ip TEXT, query_length INTEGER, request_count INTEGER)''')
+
+c.execute('''CREATE TABLE IF NOT EXISTS beaconing_activity
+                 (query TEXT, variance REAL, query_count INTEGER, average_gap REAL)''')
+
+c.execute('''CREATE TABLE IF NOT EXISTS hosts_talking_to_beaconing_domains
+                 (query TEXT, num_hosts INTEGER, avg_time_gap REAL, variance REAL)''')
+
+c.execute('''CREATE TABLE IF NOT EXISTS domains_with_subdomains
+                 (domain TEXT, subdomains_count INTEGER)''')
+c.execute('''CREATE TABLE IF NOT EXISTS dns_tunneling_domains
+                 (domain TEXT, count INTEGER, avg_entropy REAL, avg_length REAL, stdev_length REAL, subdomain_samples TEXT)''')
+
+
+################################################################################################################
 
 logging.basicConfig(filename='flow_analysis.log', level=logging.INFO, format='%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 def clients_by_volume_of_requests(log_file):
@@ -42,6 +70,9 @@ def clients_by_volume_of_requests(log_file):
   logging.info("Top 10 Clients by Volume of Requests:")
   for i in range(min(10, len(sorted_requests))):
       logging.info(f"Client IP: {sorted_requests[i][0]}, Requests: {sorted_requests[i][1]}")
+
+  for client_ip, requests in sorted_requests:
+      c.execute("INSERT INTO client_requests (client_ip, requests) VALUES (?, ?)", (client_ip, requests))
 
 
 # Example usage
@@ -85,6 +116,9 @@ def analyze_dns_log_record_type(log_file):
 
     logging.info("Analyzed the dns record type:")
     logging.info(f'Record types: {record_types}, Counts: {counts}')
+    for i in range(len(record_types)):
+        c.execute("INSERT INTO dns_record_counts (record_type, count) VALUES (?, ?)", (record_types[i], counts[i]))
+
     
     
 
@@ -135,11 +169,12 @@ def analyze_packet_size_and_volume(json_file):
     # Convert the DataFrame to a more readable format
     result_df = top_1000[['id.orig_h', 'queryLength', 'count']]
 
+    for index, row in result_df.iterrows():
+        c.execute("INSERT INTO packet_size_and_volume (client_ip, query_length, request_count) VALUES (?, ?, ?)", (row['id.orig_h'], row['queryLength'], row['count']))
 
     logging.info("Analyzed packet size and volume: ")
     logging.info(result_df.to_string(index=False))
 
-    return result_df
 
 # Example usage
 # Provide the path to the JSON file containing the events data
@@ -200,6 +235,11 @@ def detect_beaconing_activity(log_file):
             # Check for beaconing criteria
             if variance < 60 and len(time_gaps) > 2 and avg_gap > 1.0:
                 beaconing_queries.append((query, variance, len(time_gaps), avg_gap))
+
+
+    for query_info in beaconing_queries:
+        c.execute("INSERT INTO beaconing_activity (query, variance, query_count, average_gap) VALUES (?, ?, ?, ?)", query_info)
+
 
     # Print beaconing queries
     logging.info("Analysis of Beaconing Activity:")
@@ -271,6 +311,9 @@ def detect_hosts_talking_to_beaconing_domains(log_file):
         if query is not None and num_hosts is not None and avg_gap is not None and variance is not None and variance < 60 and avg_gap > 0:
             results.append((query, num_hosts, avg_gap, variance))
 
+    for result in results:
+        c.execute("INSERT INTO hosts_talking_to_beaconing_domains (query, num_hosts, avg_time_gap, variance) VALUES (?, ?, ?, ?)", result)
+
     # Print results
     logging.info("Analysis of host that are talking to Beaconing domains: ")
     if results:
@@ -322,6 +365,9 @@ def detect_domains_with_lots_of_subdomains(log_file):
     # Sort domains by number of subdomains
     sorted_domains = sorted(hosts_per_domain.items(), key=lambda x: x[1], reverse=True)
 
+    for domain, num_subdomains in sorted_domains:
+        c.execute("INSERT INTO domains_with_subdomains (domain, subdomains_count) VALUES (?, ?)", (domain, num_subdomains))
+    
     # Print results
     print("Domains with Lots of Subdomains:")
     logging.info("Domains with Lots of Subdomains:")
@@ -409,6 +455,12 @@ def detect_dns_tunneling_based_on_entropy(log_file):
         logging.info("{:<50} {:<10} {:<15.3f} {:<15.3f} {:<15.3f} {:<30}".format(
             domain, info['count'], info['avg_entropy'], info['avg_length'], info['stdev_length'], subdomain_samples_str
         ))
+    
+    for domain, info in sorted_domains:
+        subdomain_samples_str = ', '.join(info['subdomain_samples'])
+        c.execute("INSERT INTO dns_tunneling_domains (domain, count, avg_entropy, avg_length, stdev_length, subdomain_samples) VALUES (?, ?, ?, ?, ?, ?)", (domain, info['count'], info['avg_entropy'], info['avg_length'], info['stdev_length'], subdomain_samples_str))
+    conn.commit()
+    conn.close()
 
 def shannon_entropy(s):
     """Calculate Shannon entropy of a string."""
@@ -424,3 +476,6 @@ def calculate_standard_deviation(data):
 
 # Example usage
 #detect_dns_tunneling_based_on_entropy('/content/dns.ndjson')
+
+
+# conn.close()
