@@ -349,7 +349,7 @@ def main():
                     ioc TEXT
                 )''')
     conn.commit()
-    conn.close()
+    # conn.close()
 
     print("################################SCIRPT LOGS#####################################")
     if "excessive_frequency" in detection_engine.detected_iocs:
@@ -359,7 +359,7 @@ def main():
             timestamp = time.strftime('%H:%M:%S')
             c.execute("INSERT INTO excessive_frequency (timestamp, ioc) VALUES (?, ?)", (timestamp, str(ioc)))
         conn.commit()
-        conn.close()
+        # conn.close()
 
     # Check if "DNS_Tunneling" is in detected IOCs
     if "DNS_Tunneling" in detection_engine.detected_iocs:
@@ -369,7 +369,7 @@ def main():
             timestamp = time.strftime('%H:%M:%S')
             c.execute("INSERT INTO long_subdomain (timestamp, ioc) VALUES (?, ?)", (timestamp, str(ioc)))
         conn.commit()
-        conn.close()
+        # conn.close()
     print("#################################MODEL LOGS####################################")
     if "DNS_Tunneling_Model" in detection_engine.detected_iocs:
         conn = sqlite3.connect('detection_logs.db')
